@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/MGT06/shortlink-app_backend/internal/config"
+	"github.com/MGT06/shortlink-app_backend/internal/routes"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
@@ -42,15 +43,16 @@ func main() {
 	log.Printf(" PONG ! Connected PostgreSQL successfully")
 
 	redis := config.NewRedisClient(os.Getenv("RDBUSER"), os.Getenv("RDBPASS"), os.Getenv("RDBHOST"), os.Getenv("RDBPORT"))
-	
+
 	rc := redis.ConnectRedis()
 	if err := rc.Ping(context.Background()).Err(); err != nil {
 		log.Printf("Close Redis : %s\n\n", err.Error())
 	}
 
 	log.Println("PONG ! Conected redis successfully")
-
+	
 	r := gin.Default()
-
+	
+	routes.MainRouter(r, pool, rc)
 	r.Run(fmt.Sprintf("%s:%s", os.Getenv("APPHOST"), os.Getenv("APPPORT")))
 }
