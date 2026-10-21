@@ -62,6 +62,52 @@ info:
   version: "1.0"
 paths:
   /api/links:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - in: query
+        maximum: 10
+        minimum: 5
+        name: limit
+        type: integer
+      - in: query
+        minimum: 1
+        name: page
+        type: integer
+      - in: query
+        name: search
+        type: string
+      - enum:
+        - asc
+        - desc
+        in: query
+        name: sort
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - BearerToken: []
+      summary: Get All Short Link
+      tags:
+      - link
     post:
       consumes:
       - application/json

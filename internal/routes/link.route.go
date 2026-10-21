@@ -11,11 +11,12 @@ import (
 )
 
 func linkRouter(router *gin.RouterGroup, db *pgxpool.Pool, rc *redis.Client) {
-	lr := repository.NewLinkRepo(db)
-	ls := service.NewLinkRepo(lr)
+	lr := repository.NewLinkRepo()
+	ls := service.NewLinkRepo(lr, db)
 	lh := handler.NewLinkRepo(ls)
 
 	router.POST("links",middleware.CheckToken(rc), lh.CreateLink)
+	router.GET("links",middleware.CheckToken(rc), lh.GetAllLinks)
 	router.DELETE("links/:id", middleware.CheckToken(rc), lh.DeleteLink)
 	router.GET(":slug", lh.RedirectLink)
 }

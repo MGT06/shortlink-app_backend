@@ -2,27 +2,31 @@ package repository
 
 import (
 	"context"
+	"fmt"
 
 	errormsg "github.com/MGT06/shortlink-app_backend/internal/error"
 	"github.com/MGT06/shortlink-app_backend/internal/model"
-	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
-type LinkRepo struct {
-	db *pgxpool.Pool
+type DBTX interface {
+	Query(ctx context.Context, sql string, args ...any) (pgx.Rows, error)
+	QueryRow(ctx context.Context, sql string, args ...any) pgx.Row
+	Exec(ctx context.Context, sql string, args ...any) (pgconn.CommandTag, error)
 }
 
-func NewLinkRepo(db *pgxpool.Pool) *LinkRepo {
-	return &LinkRepo{
-		db: db,
-	}
+type LinkRepo struct{}
+
+func NewLinkRepo() *LinkRepo {
+	return &LinkRepo{}
 }
 
-func (l *LinkRepo) CreateLink(ctx context.Context, body model.Links) error {
+func (l *LinkRepo) CreateLink(ctx context.Context, db DBTX, body model.Links) error {
 	query := "INSERT INTO links (user_id, original_url, slug) VALUES ($1, $2, $3)"
 	args := []any{body.UserId, body.OriginaluUrl, body.Slug}
 
-	cmt, err := l.db.Exec(ctx, query, args...)
+	cmt, err := db.Exec(ctx, query, args...)
 	if err != nil {
 		return err
 	}
@@ -34,12 +38,12 @@ func (l *LinkRepo) CreateLink(ctx context.Context, body model.Links) error {
 	return nil
 }
 
-func (l *LinkRepo) CheckLink(ctx context.Context, slug string) error {
+func (l *LinkRepo) CheckLink(ctx context.Context, db DBTX, slug string) error {
 	query := "SELECT EXISTS (SELECT 1 FROM links WHERE slug = $1)"
 	args := []any{slug}
 
 	var exists bool
-	err := l.db.QueryRow(ctx, query, args...).Scan(&exists)
+	err := db.QueryRow(ctx, query, args...).Scan(&exists)
 	if err != nil {
 		return err
 	}
@@ -51,12 +55,12 @@ func (l *LinkRepo) CheckLink(ctx context.Context, slug string) error {
 	return nil
 }
 
-func (l *LinkRepo) RedirectLink(ctx context.Context, slug string) (string, error) {
+func (l *LinkRepo) RedirectLink(ctx context.Context, db DBTX, slug string) (string, error) {
 	query := "SELECT original_url FROM links WHERE slug = $1"
 	args := []any{slug}
 
 	var url string
-	err := l.db.QueryRow(ctx, query, args...).Scan(&url)
+	err := db.QueryRow(ctx, query, args...).Scan(&url)
 	if err != nil {
 		return "", err
 	}
@@ -64,11 +68,50 @@ func (l *LinkRepo) RedirectLink(ctx context.Context, slug string) (string, error
 	return url, nil
 }
 
-func (l *LinkRepo) DeleteLink(ctx context.Context, linkId int) error {
+func (l *LinkRepo) GetAllLink(ctx context.Context, db DBTX, userId int, search, sort string, limit, offset int) ([]model.Links, error) {
+	query := fmt.Sprintf("SELECT id, original_url, slug, created_at FROM links WHERE user_id = $1 AND delete_at IS NULL AND (original_url ILIKE $2 OR slug ILIKE $2) ORDER BY created_at %s LIMIT $3 OFFSET $4", sort)
+
+	args := []any{userId, "%" + search + "%", limit, offset}
+
+	rows, err := db.Query(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("dfadf", err)
+	}
+	defer rows.Close()
+
+	links := make([]model.Links, 0, limit)
+	for rows.Next() {
+		var link model.Links
+		if err := rows.Scan(&link.LinkId, &link.OriginaluUrl, &link.Slug, &link.Created_at); err != nil {
+			return nil, fmt.Errorf("dfadf", err)
+		}
+		links = append(links, link)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("dfadf", err)
+	}
+
+	return links, nil
+}
+
+func (l *LinkRepo) GetAllLinkMeta(ctx context.Context, db DBTX, userId int) (int, error) {
+	query := "SELECT COUNT(*) FROM links WHERE user_id = $1 AND delete_at IS NULL"
+	args := []any{userId}
+
+	var total int
+	if err := db.QueryRow(ctx, query, args...).Scan(&total); err != nil {
+		return 0, err
+	}
+
+	return total, nil
+}
+
+func (l *LinkRepo) DeleteLink(ctx context.Context, db DBTX, linkId int) error {
 	query := "UPDATE links SET delete_at = NOW() WHERE id = $1"
 	args := []any{linkId}
 
-	cmt, err := l.db.Exec(ctx, query, args...)
+	cmt, err := db.Exec(ctx, query, args...)
 	if err != nil {
 		return err
 	}
@@ -79,4 +122,3 @@ func (l *LinkRepo) DeleteLink(ctx context.Context, linkId int) error {
 
 	return nil
 }
-
