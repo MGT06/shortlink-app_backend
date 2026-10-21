@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/MGT06/shortlink-app_backend/internal/dto"
+	errormsg "github.com/MGT06/shortlink-app_backend/internal/error"
 	"github.com/MGT06/shortlink-app_backend/internal/model"
 	"github.com/MGT06/shortlink-app_backend/internal/repository"
 	"github.com/MGT06/shortlink-app_backend/pkg"
@@ -36,4 +37,18 @@ func (a *AuthService) Register(ctx context.Context, body dto.RegisterRequest) er
 	}
 
 	return nil
+}
+
+func (a *AuthService) Login(ctx context.Context, body dto.LoginRequest) (string, error) {
+	acc, err := a.ar.FindAccount(ctx, body.Email)
+	if err != nil {
+		return "", errormsg.ErrEmailPasswordIncorrect
+	}
+
+	if err := pkg.Compare(body.Password, acc.Password); err != nil {
+		return "", errormsg.ErrEmailPasswordIncorrect
+	}
+
+	claims := pkg.NewJWTClaims(acc.Id)
+	return claims.GenToken()
 }

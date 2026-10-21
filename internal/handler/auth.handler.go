@@ -54,3 +54,40 @@ func (a *AuthHandler) Register(ctx *gin.Context) {
 		Message: "Account created successfully",
 	})
 }
+
+func (a *AuthHandler) Login(ctx *gin.Context) {
+	var account dto.LoginRequest
+	if err := ctx.ShouldBindWith(&account, binding.JSON); err != nil {
+		log.Println(err)
+		ctx.JSON(http.StatusInternalServerError, dto.ErrorResponse{
+			Success: false,
+			Message: "Invalid email format",
+		})
+		return
+	}
+
+	token, err := a.as.Login(ctx.Request.Context(), account)
+	if err != nil {
+		log.Println(err)
+		if errors.Is(err, errormsg.ErrEmailPasswordIncorrect) {
+			ctx.JSON(http.StatusUnauthorized, dto.ErrorResponse{
+				Success: false,
+				Message: err.Error(),
+			})
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, dto.ErrorResponse{
+			Success: false,
+			Message: "A system error has occurred",
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, dto.Response{
+		Success: true,
+		Message: "Login Success",
+		Results: dto.LoginResponse{
+			Token: token,
+		},
+	})
+}

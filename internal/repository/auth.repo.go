@@ -42,7 +42,7 @@ func (a *AuthRepo) Register(ctx context.Context, body model.Users) error {
 }
 
 func (a *AuthRepo) FindAccount(ctx context.Context, email string) (model.Users, error) {
-	query := "SELECT id, full_name, password from accounts WHERE email=$1"
+	query := "SELECT id, password from accounts WHERE email=$1"
 	args := []any{email}
 
 	var data model.Users
