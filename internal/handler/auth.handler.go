@@ -22,13 +22,26 @@ func NewAuthHandler(as *service.AuthService) *AuthHandler {
 	}
 }
 
+// Register
+//
+// @Summary			Register
+// @Description		Register Account
+// @Tags			auth
+// @Accept			json
+// @Produce			json
+// @Router			/api/register	[post]
+// @Param			newAccount	body	dto.RegisterRequest		true	"Register"
+// @Success			200		{object}	dto.Response
+// @Failure			400		{object}	dto.ErrorResponse
+// @Failure			409		{object}	dto.ErrorResponse
+// @Failure			500		{object}	dto.ErrorResponse
 func (a *AuthHandler) Register(ctx *gin.Context) {
 	var newAccount dto.RegisterRequest
 	if err := ctx.ShouldBindWith(&newAccount, binding.JSON); err != nil {
 		log.Println(err)
-		ctx.JSON(http.StatusInternalServerError, dto.ErrorResponse{
+		ctx.JSON(http.StatusBadRequest, dto.ErrorResponse{
 			Success: false,
-			Message: "A system error has occurred",
+			Message: "invalid body",
 		})
 		return
 	}
@@ -55,6 +68,19 @@ func (a *AuthHandler) Register(ctx *gin.Context) {
 	})
 }
 
+// Login
+//
+// @Summary			Login
+// @Description		Login using email and password
+// @Tags			auth
+// @Accept			json
+// @Produce			json
+// @Router			/api/login	[post]
+// @Param			account	body	dto.LoginRequest	true	"Login"
+// @Success			200		{object}	dto.Response
+// @Failure			400		{object}	dto.ErrorResponse
+// @Failure			401		{object}	dto.ErrorResponse
+// @Failure			500		{object}	dto.ErrorResponse
 func (a *AuthHandler) Login(ctx *gin.Context) {
 	var account dto.LoginRequest
 	if err := ctx.ShouldBindWith(&account, binding.JSON); err != nil {

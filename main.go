@@ -16,7 +16,7 @@ import (
 //	@version		1.0
 //	@description	This is a sample server celler server.
 
-//	@host		localhost:5080
+//	@host		localhost:5050
 //	@BasePath	/
 
 //	@securityDefinitions.apikey		BearerToken
