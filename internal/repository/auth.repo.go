@@ -6,7 +6,6 @@ import (
 
 	errormsg "github.com/MGT06/shortlink-app_backend/internal/error"
 	"github.com/MGT06/shortlink-app_backend/internal/model"
-	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -22,7 +21,7 @@ func NewAuthRepo(db *pgxpool.Pool) *AuthRepo {
 }
 
 func (a *AuthRepo) Register(ctx context.Context, body model.Users) error {
-	query := "INSERT INTO accounts (full_name, email, password_hash) VALUES ($1, $2, $3)"
+	query := "INSERT INTO users (full_name, email, password_hash) VALUES ($1, $2, $3)"
 	args := []any{body.Name, body.Email, body.Password}
 
 	cmt, err := a.db.Exec(ctx, query, args...)
@@ -42,14 +41,11 @@ func (a *AuthRepo) Register(ctx context.Context, body model.Users) error {
 }
 
 func (a *AuthRepo) FindAccount(ctx context.Context, email string) (model.Users, error) {
-	query := "SELECT id, password from accounts WHERE email=$1"
+	query := "SELECT id, password_hash from users WHERE email=$1"
 	args := []any{email}
 
 	var data model.Users
-	if err := a.db.QueryRow(ctx, query, args...).Scan(&data.Id, &data.Name, &data.Password); err != nil {
-		if !errors.Is(err, pgx.ErrNoRows) {
-			return model.Users{}, nil
-		}
+	if err := a.db.QueryRow(ctx, query, args...).Scan(&data.Id, &data.Password); err != nil {
 		return model.Users{}, err
 	}
 
