@@ -1,14 +1,14 @@
 package dto
 
 type Response struct {
-	Success bool   `example:"true"`
-	Message string `example:"success"`
-	Results any    
+	Success bool   `json:"success" example:"true"`
+	Message string `json:"message" example:"success"`
+	Results any    `json:"results"`
 }
 
 type ErrorResponse struct {
-	Success bool   `example:"false"`
-	Message string `example:"error"`
-	Results any    
+	Success bool   `json:"success" example:"false"`
+	Message string `json:"message" example:"error"`
+	Results any    `json:"results"`
 }
 
