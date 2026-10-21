@@ -46,3 +46,12 @@ func (l LinkService) CreateLink(ctx context.Context, userId int, body dto.Create
 
 	return nil
 }
+
+func (l *LinkService) RedirectLink(ctx context.Context, slug string) (string, error) {
+	url, err := l.lr.RedirectLink(ctx, slug)
+	if err != nil {
+		return "", err
+	}
+
+	return url, nil
+}

@@ -50,3 +50,16 @@ func (l *LinkRepo) CheckLink(ctx context.Context, slug string) error {
 
 	return nil
 }
+
+func (l *LinkRepo) RedirectLink(ctx context.Context, slug string) (string, error) {
+	query := "SELECT original_url FROM links WHERE slug = $1"
+	args := []any{slug}
+
+	var url string
+	err := l.db.QueryRow(ctx, query, args...).Scan(&url)
+	if err != nil {
+		return "", err
+	}
+
+	return url, nil
+}

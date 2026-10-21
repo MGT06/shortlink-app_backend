@@ -10,6 +10,7 @@ import (
 	"github.com/MGT06/shortlink-app_backend/internal/service"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
+	"github.com/jackc/pgx/v5"
 )
 
 type LinkHandler struct {
@@ -74,4 +75,26 @@ func (l LinkHandler) CreateLink(ctx *gin.Context) {
 		Success: true,
 		Message: "Link created successfully",
 	})
+}
+
+func (l *LinkHandler) RedirectLink(ctx *gin.Context) {
+	slug := ctx.Param("slug")
+
+	url, err := l.ls.RedirectLink(ctx.Request.Context(), slug)
+	if err != nil {
+		log.Println(err)
+		if errors.Is(err, pgx.ErrNoRows) {
+			ctx.JSON(http.StatusNotFound, dto.ErrorResponse{
+				Success: false,
+				Message: errormsg.ErrLinkNotFound.Error(),
+			})
+		}
+		ctx.JSON(http.StatusInternalServerError, dto.ErrorResponse{
+			Success: false,
+			Message: "a system error has occured",
+		})
+		return
+	}
+	
+	ctx.Redirect(http.StatusMovedPermanently, url)
 }
