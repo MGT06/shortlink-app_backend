@@ -1,11 +1,19 @@
 basePath: /
 definitions:
+  dto.CreateLinkRequest:
+    properties:
+      original_url:
+        type: string
+      slug:
+        type: string
+    required:
+    - original_url
+    type: object
   dto.ErrorResponse:
     properties:
       message:
         example: error
         type: string
-      results: {}
       success:
         example: false
         type: boolean
@@ -53,6 +61,41 @@ info:
   title: ShortLink APP
   version: "1.0"
 paths:
+  /api/links:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Link
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateLinkRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - BearerToken: []
+      summary: Create a Short Link
+      tags:
+      - link
   /api/login:
     post:
       consumes:
