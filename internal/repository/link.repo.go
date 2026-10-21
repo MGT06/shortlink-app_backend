@@ -63,3 +63,20 @@ func (l *LinkRepo) RedirectLink(ctx context.Context, slug string) (string, error
 
 	return url, nil
 }
+
+func (l *LinkRepo) DeleteLink(ctx context.Context, linkId int) error {
+	query := "UPDATE links SET delete_at = NOW() WHERE id = $1"
+	args := []any{linkId}
+
+	cmt, err := l.db.Exec(ctx, query, args...)
+	if err != nil {
+		return err
+	}
+
+	if cmt.RowsAffected() == 0 {
+		return errormsg.ErrNoRowAffected
+	}
+
+	return nil
+}
+

@@ -16,5 +16,6 @@ func linkRouter(router *gin.RouterGroup, db *pgxpool.Pool, rc *redis.Client) {
 	lh := handler.NewLinkRepo(ls)
 
 	router.POST("links",middleware.CheckToken(rc), lh.CreateLink)
+	router.DELETE("links/:id", middleware.CheckToken(rc), lh.DeleteLink)
 	router.GET(":slug", lh.RedirectLink)
 }

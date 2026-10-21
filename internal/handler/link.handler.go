@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/MGT06/shortlink-app_backend/internal/dto"
 	errormsg "github.com/MGT06/shortlink-app_backend/internal/error"
@@ -95,6 +96,54 @@ func (l *LinkHandler) RedirectLink(ctx *gin.Context) {
 		})
 		return
 	}
-	
+
 	ctx.Redirect(http.StatusMovedPermanently, url)
+}
+
+// Delete Link
+//
+// @Summary			Delete a Short Link
+// @Tags			link
+// @Accept			json
+// @Produce			json
+// @Router			/api/links/{id}			[delete]
+// @Param			linkId	path		string	true	"id link"
+// @Security 		BearerToken
+// @Success			200		{object}	dto.Response
+// @Failure			404		{object}	dto.ErrorResponse
+// @Failure			422		{object}	dto.ErrorResponse
+// @Failure			500		{object}	dto.ErrorResponse
+func (l *LinkHandler) DeleteLink(ctx *gin.Context) {
+	linkId := ctx.Param("id")
+
+	id, err := strconv.Atoi(linkId)
+	if err != nil {
+		ctx.JSON(http.StatusUnprocessableEntity, dto.ErrorResponse{
+			Success: false,
+			Message: "invalid param",
+		})
+		return
+	}
+
+	if err := l.ls.DeleteLink(ctx.Request.Context(), id); err != nil {
+		log.Println(err)
+		if errors.Is(err, errormsg.ErrNoRowAffected) {
+			ctx.JSON(http.StatusNotFound, dto.ErrorResponse{
+				Success: false,
+				Message: "link not found",
+			})
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, dto.ErrorResponse{
+			Success: false,
+			Message: "a system error has occured",
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, dto.Response{
+		Success: true,
+		Message: "Link Deleted",
+	})
+
 }

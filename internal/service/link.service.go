@@ -55,3 +55,11 @@ func (l *LinkService) RedirectLink(ctx context.Context, slug string) (string, er
 
 	return url, nil
 }
+
+func (l *LinkService) DeleteLink(ctx context.Context, linkId int) error {
+	if err := l.lr.DeleteLink(ctx, linkId); err != nil {
+		return err
+	}
+
+	return nil
+}

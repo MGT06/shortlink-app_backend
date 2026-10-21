@@ -71,6 +71,60 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/links/{id}": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerToken": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "link"
+                ],
+                "summary": "Delete a Short Link",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "id link",
+                        "name": "linkId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/login": {
             "post": {
                 "description": "Login using email and password",
