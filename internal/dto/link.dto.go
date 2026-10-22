@@ -18,6 +18,7 @@ type LinkItem struct {
 	Id          int       `json:"id"`
 	OriginalURL string    `json:"original_url"`
 	Slug        string    `json:"slug"`
+	Click       int       `json:"click"`
 	CreatedAt   time.Time `json:"created_at"`
 }
 
