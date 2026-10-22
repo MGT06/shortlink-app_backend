@@ -153,7 +153,6 @@ Ensure you have the following installed on your system:
 | POST | `/api/register` | Register a new user | No |
 | POST | `/api/login` | Login user and receive JWT token | No |
 | POST | `/api/logout` | Logout user and invalidate token | Yes |
-```
 
 ### Link Management Endpoints
 
@@ -167,9 +166,8 @@ Ensure you have the following installed on your system:
 ### Authentication
 
 Protected endpoints require a Bearer token in the Authorization header:
-```
 Authorization: Bearer <jwt_token>
-```
+
 
 ## License
 
