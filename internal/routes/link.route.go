@@ -10,13 +10,15 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-func linkRouter(router *gin.RouterGroup, db *pgxpool.Pool, rc *redis.Client) {
+func linkRouter(router *gin.Engine, db *pgxpool.Pool, rc *redis.Client) {
+	r := router.Group("api")
+
 	lr := repository.NewLinkRepo()
 	ls := service.NewLinkRepo(lr, db)
 	lh := handler.NewLinkRepo(ls)
 
-	router.POST("links",middleware.CheckToken(rc), lh.CreateLink)
-	router.GET("links",middleware.CheckToken(rc), lh.GetAllLinks)
-	router.DELETE("links/:id", middleware.CheckToken(rc), lh.DeleteLink)
+	r.POST("links",middleware.CheckToken(rc), lh.CreateLink)
+	r.GET("links",middleware.CheckToken(rc), lh.GetAllLinks)
+	r.DELETE("links/:id", middleware.CheckToken(rc), lh.DeleteLink)
 	router.GET(":slug", lh.RedirectLink)
 }

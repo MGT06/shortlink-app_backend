@@ -8,11 +8,13 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func authRouter(router *gin.RouterGroup, db *pgxpool.Pool) {
+func authRouter(router *gin.Engine, db *pgxpool.Pool) {
+	r := router.Group("api")
+
 	ar := repository.NewAuthRepo(db)
 	as := service.NewAuthService(ar)
 	ah := handler.NewAuthHandler(as)
 
-	router.POST("register", ah.Register)
-	router.POST("login", ah.Login)
+	r.POST("register", ah.Register)
+	r.POST("login", ah.Login)
 }
