@@ -56,7 +56,7 @@ func (l *LinkRepo) CheckLink(ctx context.Context, db DBTX, slug string) error {
 }
 
 func (l *LinkRepo) RedirectLink(ctx context.Context, db DBTX, slug string) (string, error) {
-	query := "SELECT original_url FROM links WHERE slug = $1"
+	query := "SELECT original_url FROM links WHERE slug = $1 AND delete_at IS NULL"
 	args := []any{slug}
 
 	var url string
