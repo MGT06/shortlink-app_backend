@@ -30,23 +30,6 @@ The application uses PostgreSQL for persistent data storage and Redis for cachin
   - Delete links
   - Fast redirection to original URLs
 
-- **Security**
-  - Bcrypt password hashing
-  - JWT token-based authorization
-  - CORS middleware configuration
-  - Protected API endpoints
-
-- **Performance**
-  - Redis caching for fast lookups
-  - Efficient database queries with connection pooling
-  - Optimized slug generation using UUID
-
-- **Developer Experience**
-  - Swagger API documentation
-  - Database migrations support
-  - Clean architecture structure
-  - Comprehensive error handling
-
 ## Tech Stack
 
 ### Backend Framework
