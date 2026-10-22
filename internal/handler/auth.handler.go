@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/MGT06/shortlink-app_backend/internal/dto"
 	errormsg "github.com/MGT06/shortlink-app_backend/internal/error"
@@ -115,5 +116,71 @@ func (a *AuthHandler) Login(ctx *gin.Context) {
 		Results: dto.LoginResponse{
 			Token: token,
 		},
+	})
+}
+
+// Logout
+//
+// @Summary			Logut
+// @Description		User Logout
+// @Tags			auth
+// @Accept			json
+// @Produce			json
+// @Router			/api/logout 	[post]
+// @Security 		BearerToken
+// @Success			200		{object}	dto.Response
+// @Failure			400		{object}	dto.ErrorResponse
+// @Failure			401		{object}	dto.ErrorResponse
+// @Failure			500		{object}	dto.ErrorResponse
+func (a *AuthHandler) Logout(ctx *gin.Context) {
+	userId, exist := ctx.Get("userId")
+	if !exist {
+		ctx.JSON(http.StatusInternalServerError, dto.ErrorResponse{
+			Success: false,
+			Message: "A system error has occurred",
+		})
+		return
+	}
+
+	jwtID, exist := ctx.Get("jti")
+	if !exist {
+		ctx.JSON(http.StatusInternalServerError, dto.ErrorResponse{
+			Success: false,
+			Message: "A system error has occurred",
+		})
+		return
+	}
+
+	exp, exist := ctx.Get("exp")
+	if !exist {
+		ctx.JSON(http.StatusInternalServerError, dto.ErrorResponse{
+			Success: false,
+			Message: "A system error has occurred",
+		})
+		return
+	}
+
+	expTime, ok := exp.(time.Time)
+	if !ok {
+		ctx.JSON(http.StatusInternalServerError, dto.ErrorResponse{
+			Success: false,
+			Message: "A system error has occurred",
+		})
+		return
+	}
+
+	ttl := time.Until(expTime)
+
+	if err := a.as.Logout(ctx, userId.(int), jwtID.(string), ttl); err != nil {
+		ctx.JSON(http.StatusInternalServerError, dto.ErrorResponse{
+			Success: false,
+			Message: "A system error has occurred",
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusNoContent, dto.Response{
+		Success: true,
+		Message: "logout success",
 	})
 }

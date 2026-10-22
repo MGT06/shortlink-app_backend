@@ -3,22 +3,28 @@ package service
 import (
 	"context"
 	"errors"
+	"fmt"
+	"time"
 
 	"github.com/MGT06/shortlink-app_backend/internal/dto"
 	errormsg "github.com/MGT06/shortlink-app_backend/internal/error"
 	"github.com/MGT06/shortlink-app_backend/internal/model"
 	"github.com/MGT06/shortlink-app_backend/internal/repository"
+	"github.com/MGT06/shortlink-app_backend/internal/utils"
 	"github.com/MGT06/shortlink-app_backend/pkg"
 	"github.com/jackc/pgx/v5"
+	"github.com/redis/go-redis/v9"
 )
 
 type AuthService struct {
 	ar *repository.AuthRepo
+	rc *redis.Client
 }
 
-func NewAuthService(ar *repository.AuthRepo) *AuthService {
+func NewAuthService(ar *repository.AuthRepo, rc *redis.Client) *AuthService {
 	return &AuthService{
 		ar: ar,
+		rc: rc,
 	}
 }
 
@@ -56,4 +62,14 @@ func (a *AuthService) Login(ctx context.Context, body dto.LoginRequest) (string,
 
 	claims := pkg.NewJWTClaims(acc.Id)
 	return claims.GenToken()
+}
+
+func (a *AuthService) Logout(ctx context.Context, userId int, JTI string, Expired time.Duration) error {
+	key := fmt.Sprintf("shortlink:tokenBlacklist:%s", JTI)
+
+	if err := utils.SetToRedis(ctx, a.rc, key, userId, Expired); err != nil {
+		return err
+	}
+
+	return nil
 }

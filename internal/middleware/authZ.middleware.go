@@ -58,7 +58,7 @@ func CheckToken(rc *redis.Client) gin.HandlerFunc {
 			return
 		}
 
-		key := fmt.Sprintf("eventhub:tokenBlacklist:%s", token.ID)
+		key := fmt.Sprintf("shortlink:tokenBlacklist:%s", token.ID)
 		n, err := rc.Exists(c.Request.Context(), key).Result()
 		if err != nil {
 			log.Println(err)
