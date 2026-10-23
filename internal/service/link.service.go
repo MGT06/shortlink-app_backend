@@ -3,9 +3,11 @@ package service
 import (
 	"context"
 	"math"
+	"regexp"
 	"strings"
 
 	"github.com/MGT06/shortlink-app_backend/internal/dto"
+	errormsg "github.com/MGT06/shortlink-app_backend/internal/error"
 	"github.com/MGT06/shortlink-app_backend/internal/model"
 	"github.com/MGT06/shortlink-app_backend/internal/repository"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -25,15 +27,30 @@ func NewLinkRepo(lr *repository.LinkRepo, db *pgxpool.Pool) *LinkService {
 }
 
 func (l LinkService) CreateLink(ctx context.Context, userId int, body dto.CreateLinkRequest) error {
-	randomSlug, err := randutil.Alphanumeric(6)
-	if err != nil {
-		return err
+	var slugRegex = regexp.MustCompile(`^[a-zA-Z0-9-]+$`)
+	var reservedSlugs = map[string]struct{}{
+		"api":       {},
+		"login":     {},
+		"register":  {},
+		"dashboard": {},
+	}
+	var slug string
+
+	if body.Slug != "" {
+		if !slugRegex.MatchString(body.Slug) {
+			return errormsg.ErrSlugInvalid
+		}
+		if _, found := reservedSlugs[strings.ToLower(body.Slug)]; found {
+			return errormsg.ErrSlugReserved
+		}
+		slug = body.Slug
 	}
 
-	var slug string
-	if body.Slug != "" {
-		slug = body.Slug
-	} else if body.Slug == "" {
+	if body.Slug == "" {
+		randomSlug, err := randutil.Alphanumeric(6)
+		if err != nil {
+			return err
+		}
 		slug = randomSlug
 	}
 
